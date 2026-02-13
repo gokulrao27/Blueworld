@@ -54,6 +54,8 @@ declare global {
       pointLight: any;
       ambientLight: any;
       color: any;
+      // Allow any other elements (HTML, SVG, etc) to avoid conflicts or missing definitions
+      [elemName: string]: any;
     }
   }
 }
