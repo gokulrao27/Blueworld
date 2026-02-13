@@ -1,0 +1,7 @@
+{
+  "name": "Invisible Bluetooth Universe",
+  "description": "Real-time 3D visualization of nearby Bluetooth Low Energy devices using Web Bluetooth API.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
