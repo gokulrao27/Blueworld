@@ -1,16 +1,18 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere, Trail, Html } from '@react-three/drei';
+import { Trail, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { VizDevice } from '../types';
 
 interface DeviceOrbProps {
   device: VizDevice;
+  onSelect: (device: VizDevice) => void;
 }
 
-const DeviceOrb: React.FC<DeviceOrbProps> = ({ device }) => {
+const DeviceOrb: React.FC<DeviceOrbProps> = ({ device, onSelect }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
   
   // Create a stable random offset for "hovering" animation
   const hoverOffset = useMemo(() => Math.random() * 100, []);
@@ -25,7 +27,7 @@ const DeviceOrb: React.FC<DeviceOrbProps> = ({ device }) => {
       const pulseSpeed = Math.max(1, (100 + device.rssi) / 10); 
       const time = state.clock.elapsedTime;
       
-      const scaleBase = 1;
+      const scaleBase = hovered ? 1.5 : 1;
       const pulse = Math.sin(time * pulseSpeed + hoverOffset) * 0.1 + 1;
       
       const finalScale = scaleBase * pulse;
@@ -49,17 +51,36 @@ const DeviceOrb: React.FC<DeviceOrbProps> = ({ device }) => {
         color={new THREE.Color(device.color)}
         attenuation={(t) => t * t}
       >
-        <mesh ref={meshRef} position={device.position}>
+        <mesh 
+          ref={meshRef} 
+          position={device.position}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(device);
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = 'pointer';
+            setHovered(true);
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = 'auto';
+            setHovered(false);
+          }}
+        >
           <sphereGeometry args={[0.5, 32, 32]} />
           <meshStandardMaterial
             color={device.color}
             emissive={device.color}
-            emissiveIntensity={2}
+            emissiveIntensity={hovered ? 3 : 2}
             toneMapped={false}
           />
           {/* Label */}
-          <Html position={[0, 1, 0]} center distanceFactor={15}>
-            <div className="pointer-events-none select-none text-xs font-mono text-white bg-black/50 px-2 py-1 rounded border border-white/20 backdrop-blur-sm whitespace-nowrap">
+          <Html position={[0, 1, 0]} center distanceFactor={15} style={{pointerEvents: 'none'}}>
+            <div className={`
+              text-xs font-mono text-white bg-black/50 px-2 py-1 rounded border border-white/20 backdrop-blur-sm whitespace-nowrap
+              transition-opacity duration-300
+              ${hovered ? 'opacity-100' : 'opacity-70'}
+            `}>
               <div className="font-bold">{device.name}</div>
               <div className="text-[10px] opacity-70">{device.rssi} dBm</div>
             </div>
@@ -73,7 +94,7 @@ const DeviceOrb: React.FC<DeviceOrbProps> = ({ device }) => {
         <meshBasicMaterial
           color={device.color}
           transparent
-          opacity={0.15}
+          opacity={hovered ? 0.3 : 0.15}
           depthWrite={false}
         />
       </mesh>

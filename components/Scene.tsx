@@ -9,6 +9,7 @@ import { COLORS } from '../constants';
 
 interface SceneProps {
   devices: VizDevice[];
+  onSelectDevice: (device: VizDevice) => void;
 }
 
 const UserNode = () => {
@@ -39,7 +40,7 @@ const UserNode = () => {
   );
 };
 
-const Scene: React.FC<SceneProps> = ({ devices }) => {
+const Scene: React.FC<SceneProps> = ({ devices, onSelectDevice }) => {
   return (
     <Canvas dpr={[1, 2]} gl={{ antialias: false }}>
       <PerspectiveCamera makeDefault position={[0, 15, 25]} fov={50} />
@@ -55,7 +56,11 @@ const Scene: React.FC<SceneProps> = ({ devices }) => {
       {/* Objects */}
       <UserNode />
       {devices.map((device) => (
-        <DeviceOrb key={device.id} device={device} />
+        <DeviceOrb 
+          key={device.id} 
+          device={device} 
+          onSelect={onSelectDevice}
+        />
       ))}
 
       {/* Controls */}

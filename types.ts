@@ -1,4 +1,5 @@
 import { Vector3 } from 'three';
+import React from 'react';
 
 // Web Bluetooth API Types (Partial)
 export interface BluetoothDeviceEvent extends Event {
@@ -7,6 +8,7 @@ export interface BluetoothDeviceEvent extends Event {
   txPower?: number;
   manufacturerData?: Map<number, DataView>;
   serviceData?: Map<string, DataView>;
+  uuids?: string[];
 }
 
 export interface BluetoothDevice extends EventTarget {
@@ -37,13 +39,13 @@ export interface Bluetooth {
   getAvailability(): Promise<boolean>;
 }
 
+// Global Augmentations
 declare global {
   interface Navigator {
     bluetooth: Bluetooth;
   }
 
-  // Augment JSX IntrinsicElements to support React Three Fiber primitives
-  // This resolves errors where TypeScript doesn't recognize R3F elements as valid JSX tags
+  // Global JSX Namespace (Legacy/Global Scope)
   namespace JSX {
     interface IntrinsicElements {
       mesh: any;
@@ -53,8 +55,30 @@ declare global {
       group: any;
       pointLight: any;
       ambientLight: any;
+      spotLight: any;
+      directionalLight: any;
+      primitive: any;
       color: any;
-      // Allow any other elements (HTML, SVG, etc) to avoid conflicts or missing definitions
+      [elemName: string]: any;
+    }
+  }
+}
+
+// React Module Augmentation (React 18+ Scope)
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      mesh: any;
+      sphereGeometry: any;
+      meshStandardMaterial: any;
+      meshBasicMaterial: any;
+      group: any;
+      pointLight: any;
+      ambientLight: any;
+      spotLight: any;
+      directionalLight: any;
+      primitive: any;
+      color: any;
       [elemName: string]: any;
     }
   }
@@ -69,6 +93,10 @@ export interface VizDevice {
   position: Vector3; // Calculated target position
   color: string;
   category: DeviceCategory;
+  // Extra metadata for details view
+  manufacturerData?: string;
+  uuids?: string[];
+  txPower?: number;
 }
 
 export enum DeviceCategory {
